@@ -1,4 +1,4 @@
-## v0.13.0 / unreleased
+## v0.13.0 / 2016-11-06
 
 * [FEATURE] Add flag to ignore certain filesystem types (Copy of #217) #241
 * [FEATURE] Add NTP stratum to NTP collector. #247
