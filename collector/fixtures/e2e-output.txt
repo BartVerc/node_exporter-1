@@ -1749,6 +1749,41 @@ node_procs_blocked 0
 # HELP node_procs_running Number of processes in runnable state.
 # TYPE node_procs_running gauge
 node_procs_running 2
+# HELP node_puppet_config_version Config version of Puppet.
+# TYPE node_puppet_config_version gauge
+node_puppet_config_version 1.479728962e+09
+# HELP node_puppet_events Summary of Puppet events.
+# TYPE node_puppet_events gauge
+node_puppet_events{status="failure"} 0
+node_puppet_events{status="success"} 4
+# HELP node_puppet_resources Summary of Puppet resources
+# TYPE node_puppet_resources gauge
+node_puppet_resources{status="changed"} 4
+node_puppet_resources{status="failed"} 0
+node_puppet_resources{status="failed_to_restart"} 0
+node_puppet_resources{status="out_of_sync"} 4
+node_puppet_resources{status="restarted"} 1
+node_puppet_resources{status="scheduled"} 0
+node_puppet_resources{status="skipped"} 0
+node_puppet_resources{status="total"} 1961
+# HELP node_puppet_time_of_last_run_unixtime Timestamp of the last puppet run in Unixtime
+# TYPE node_puppet_time_of_last_run_unixtime gauge
+node_puppet_time_of_last_run_unixtime 1.479729157e+09
+# HELP node_puppet_time_per_stage_seconds The time per stage of a Puppet run.
+# TYPE node_puppet_time_per_stage_seconds gauge
+node_puppet_time_per_stage_seconds{stage="augeas"} 0.751159753
+node_puppet_time_per_stage_seconds{stage="config_retrieval"} 72.8496285
+node_puppet_time_per_stage_seconds{stage="exec"} 89.59191921500003
+node_puppet_time_per_stage_seconds{stage="file"} 2.424231489000002
+node_puppet_time_per_stage_seconds{stage="file_line"} 0.000417825
+node_puppet_time_per_stage_seconds{stage="filebucket"} 0.000170446
+node_puppet_time_per_stage_seconds{stage="group"} 0.002837234
+node_puppet_time_per_stage_seconds{stage="package"} 5.7875558599999986
+node_puppet_time_per_stage_seconds{stage="schedule"} 0.00083211
+node_puppet_time_per_stage_seconds{stage="service"} 0.99843378
+node_puppet_time_per_stage_seconds{stage="ssh_authorized_key"} 0.007832299000000001
+node_puppet_time_per_stage_seconds{stage="sshkey"} 0.09999658200000008
+node_puppet_time_per_stage_seconds{stage="user"} 0.017930873
 # HELP node_sockstat_FRAG_inuse Number of FRAG sockets in state inuse.
 # TYPE node_sockstat_FRAG_inuse gauge
 node_sockstat_FRAG_inuse 0

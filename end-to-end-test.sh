@@ -67,6 +67,7 @@ fi
   -collectors.enabled="$(echo ${collectors} | tr ' ' ',')" \
   -collector.textfile.directory="collector/fixtures/textfile/two_metric_files/" \
   -collector.megacli.command="collector/fixtures/megacli" \
+  -collector.puppet.summaryfile="collector/fixtures/puppet_last_run_summary.txt"\
   -web.listen-address "127.0.0.1:${port}" \
   -log.level="debug" > "${tmpdir}/node_exporter.log" 2>&1 &
 

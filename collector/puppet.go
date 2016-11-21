@@ -29,26 +29,22 @@ var (
 )
 
 type puppetCollector struct {
-	fail_count          *prometheus.Desc
-	time_since_last_run *prometheus.Desc
+	configVersion     *prometheus.Desc
+	resources         *prometheus.Desc
+	timeOfLastRun     *prometheus.Desc
+	lastRunStagesTime *prometheus.Desc
+	events            *prometheus.Desc
 }
 
-type summaryResources struct {
-	Failed int `yaml:"failed"`
-}
-
-type summaryTime struct {
-	LastRun int `yaml:"last_run"`
-}
-
-type summaryEvents struct {
-	Failure int `yaml:"failure"`
+type summaryConfig struct {
+	Config float64 `yaml:"config"`
 }
 
 type summary struct {
-	Resources summaryResources `yaml:"resources"`
-	Time      summaryTime      `yaml:"time"`
-	Events    summaryEvents    `yaml:"events"`
+	Resources map[string]float64 `yaml:"resources"`
+	Time      map[string]float64 `yaml:"time"`
+	Events    map[string]float64 `yaml:"events"`
+	Version   summaryConfig      `yaml:"version"`
 }
 
 func init() {
@@ -57,41 +53,59 @@ func init() {
 
 func NewPuppetCollector() (Collector, error) {
 	return &puppetCollector{
-		fail_count: prometheus.NewDesc(
-			prometheus.BuildFQName(Namespace, "", "Puppet_fail_count"),
-			"The total Puppet fail_count.", nil, nil),
-		time_since_last_run: prometheus.NewDesc(
-			prometheus.BuildFQName(Namespace, "", "Puppet_time_since_last_run"),
-			"The time since the last Puppet run.", nil, nil),
+		configVersion: prometheus.NewDesc(
+			prometheus.BuildFQName(Namespace, "", "puppet_catalog_version"),
+			"Catalog version of Puppet.", nil, nil),
+		resources: prometheus.NewDesc(
+			prometheus.BuildFQName(Namespace, "", "puppet_resources"),
+			"Summary of Puppet resources", []string{"status"}, nil),
+		lastRunStagesTime: prometheus.NewDesc(
+			prometheus.BuildFQName(Namespace, "", "puppet_time_per_stage_seconds"),
+			"The time per stage of a Puppet run.", []string{"stage"}, nil),
+		timeOfLastRun: prometheus.NewDesc(
+			prometheus.BuildFQName(Namespace, "", "puppet_time_of_last_run_seconds"),
+			"Timestamp of the last puppet run in Unixtime", nil, nil),
+		events: prometheus.NewDesc(
+			prometheus.BuildFQName(Namespace, "", "puppet_events"),
+			"Summary of Puppet events.", []string{"status"}, nil),
 	}, nil
 }
 
 func (c *puppetCollector) Update(ch chan<- prometheus.Metric) error {
-
-	if err := c.collectFailCount(ch); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (c *puppetCollector) collectFailCount(ch chan<- prometheus.Metric) error {
 	yamlFile, err := ioutil.ReadFile(*summaryfile)
-
 	if err != nil {
 		return err
 	}
 
 	var summary summary
-
 	err = yaml.Unmarshal(yamlFile, &summary)
 	if err != nil {
 		return err
 	}
 
-	fail_count := float64(summary.Events.Failure + summary.Resources.Failed)
-	time_since_last_run := float64(summary.Time.LastRun)
+	ch <- prometheus.MustNewConstMetric(c.configVersion, prometheus.GaugeValue,
+		summary.Version.Config)
 
-	ch <- prometheus.MustNewConstMetric(c.fail_count, prometheus.GaugeValue, fail_count)
-	ch <- prometheus.MustNewConstMetric(c.time_since_last_run, prometheus.GaugeValue, time_since_last_run)
+	for status, number := range summary.Resources {
+		ch <- prometheus.MustNewConstMetric(c.resources, prometheus.GaugeValue,
+			number, status)
+	}
+
+	for stage, time := range summary.Time {
+		if stage == "last_run" {
+			ch <- prometheus.MustNewConstMetric(c.timeOfLastRun,
+				prometheus.GaugeValue, time)
+		} else if stage != "total" {
+			ch <- prometheus.MustNewConstMetric(c.lastRunStagesTime,
+				prometheus.GaugeValue, time, stage)
+		}
+	}
+
+	for status, number := range summary.Events {
+		if status != "total" {
+			ch <- prometheus.MustNewConstMetric(c.events, prometheus.GaugeValue,
+				number, status)
+		}
+	}
 	return nil
 }
