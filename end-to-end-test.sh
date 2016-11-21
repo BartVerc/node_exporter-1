@@ -20,6 +20,7 @@ collectors=$(cat << COLLECTORS
   textfile
   bonding
   megacli
+  puppet
 COLLECTORS
 )
 
